@@ -1,16 +1,19 @@
 package com.demo.test;
 
+import com.demo.agent.trace.TraceContext;
+
 public class TestMain {
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
 
-        UserService userService = new UserService();
+        System.out.println(TraceContext.getTraceId());
 
-        for (int i = 0; i < 5; i++) {
+        test();
 
-            userService.login();
+        System.out.println(TraceContext.getTraceId());
+    }
 
-            Thread.sleep(1000);
-        }
+    public static void test() {
+        System.out.println(TraceContext.getTraceId());
     }
 }

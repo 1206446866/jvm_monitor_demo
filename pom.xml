@@ -9,10 +9,10 @@
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
     <modules>
-<!--        <module>monitor-agent</module>-->
+        <module>monitor-agent</module>
 <!--        <module>monitor-core</module>-->
 <!--        <module>monitor-server</module>-->
-        <module>monitor-test-app</module>
+<!--        <module>monitor-test-app</module>-->
     </modules>
 
     <build>
