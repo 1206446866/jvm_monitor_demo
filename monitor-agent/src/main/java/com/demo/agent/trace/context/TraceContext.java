@@ -1,5 +1,8 @@
-package com.demo.agent.trace;
+package com.demo.agent.trace.context;
 
+import com.demo.agent.trace.model.Span;
+
+import java.util.Stack;
 import java.util.UUID;
 
 public class TraceContext {
@@ -12,6 +15,8 @@ public class TraceContext {
      * 所以可以实现“调用链上下文共享”
      */
     private static final ThreadLocal<String> TRACE_ID = new ThreadLocal<>();
+
+    private static final ThreadLocal<Stack<Span>> SPAN_STACK = ThreadLocal.withInitial(Stack::new);
 
     /**
      * 获取当前线程 traceId
@@ -33,6 +38,22 @@ public class TraceContext {
         return traceId;
     }
 
+    public static void pushSpan(Span span) {
+        SPAN_STACK.get().push(span);
+    }
+
+    public static Span popSpan() {
+        return SPAN_STACK.get().isEmpty() ? null : SPAN_STACK.get().pop();
+    }
+
+    public static Span currentSpan() {
+        return SPAN_STACK.get().isEmpty() ? null : SPAN_STACK.get().peek();
+    }
+
+    public static boolean hasActiveSpan() {
+        return !SPAN_STACK.get().isEmpty();
+    }
+
     /**
      * 请求结束后清理 ThreadLocal
      * <p>
@@ -41,5 +62,8 @@ public class TraceContext {
      */
     public static void clear() {
         TRACE_ID.remove();
+        SPAN_STACK.remove();
     }
+
+
 }

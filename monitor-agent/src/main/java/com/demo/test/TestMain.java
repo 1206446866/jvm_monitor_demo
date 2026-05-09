@@ -1,6 +1,6 @@
 package com.demo.test;
 
-import com.demo.agent.trace.TraceContext;
+import com.demo.agent.trace.context.TraceContext;
 
 public class TestMain {
 

@@ -1,4 +1,4 @@
-package com.demo.agent;
+package com.demo.agent.trace.interceptor;
 
 import net.bytebuddy.implementation.bind.annotation.Origin;
 import net.bytebuddy.implementation.bind.annotation.SuperCall;

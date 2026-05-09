@@ -1,7 +1,7 @@
 package com.demo.test;
 
 
-import com.demo.agent.trace.Span;
+import com.demo.agent.trace.model.Span;
 
 public class SpanTest {
 
