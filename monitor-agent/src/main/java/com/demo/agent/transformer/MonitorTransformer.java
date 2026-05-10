@@ -1,5 +1,6 @@
 package com.demo.agent.transformer;
 
+import com.demo.agent.trace.Trace;
 import com.demo.agent.trace.interceptor.TracingInterceptor;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.implementation.MethodDelegation;
@@ -21,7 +22,7 @@ public class MonitorTransformer {
                 .type(
                         ElementMatchers.nameStartsWith(
                                 "com.demo.app"
-                        )
+                        ).or(ElementMatchers.isAnnotatedWith(Trace.class))
                 )
 
                 /**
@@ -31,18 +32,14 @@ public class MonitorTransformer {
                             typeDescription,
                             classLoader,
                             module,
-                            protectionDomain) ->
-                        builder.method(
-                                ElementMatchers.isAnnotatedWith(
-                                        ElementMatchers.isPublic()
-                                )
-                        )
+                            protectionDomain) -> {
+                            return typeDescription.getDeclaredAnnotations().isAnnotationPresent(Trace.class) ?
+                                    builder.method(ElementMatchers.any())
+                                            .intercept(MethodDelegation.to(TracingInterceptor.class)) :
+                                    builder.method(ElementMatchers.isAnnotatedWith(Trace.class))
+                                            .intercept(MethodDelegation.to(TracingInterceptor.class));
+                        }
 
-                                .intercept(
-                                        MethodDelegation.to(
-                                                TracingInterceptor.class
-                                        )
-                                )
                 )
 
                 .installOn(inst);

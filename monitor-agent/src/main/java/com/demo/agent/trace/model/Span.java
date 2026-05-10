@@ -1,145 +1,92 @@
 package com.demo.agent.trace.model;
 
-
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Span:
- * 一次方法调用记录
- * <p>
- * 未来：
- * 一个 trace 会包含多个 span
- * <p>
- * 例如：
- * <p>
- * Controller.login()
- * └── Service.query()
- * └── Dao.select()
+ * 一次方法调用的最小观测单元（immutable mindset）
+ *
+ * ⚠ 设计原则：
+ * - 不维护调用树结构（children / parent object 不在这里）
+ * - 不控制生命周期（finish 在 TraceManager）
+ * - 只负责“记录事实”
  */
 public class Span {
 
     /**
-     * 类名
+     * 属于哪个 trace
      */
-    private String className;
+    private String traceId;
 
     /**
-     * 方法名
+     * 当前 span 唯一 ID
      */
-    private String methodName;
+    private String spanId;
 
     /**
-     * 方法开始时间
+     * 父 spanId（用于还原调用关系）
+     */
+    private String parentSpanId;
+
+    /**
+     * 方法全名（推荐：com.demo.Service.method）
+     */
+    private String method;
+
+    /**
+     * 开始时间（纳秒级更适合 tracing）
      */
     private long startTime;
 
     /**
-     * 方法结束时间
+     * 结束时间
      */
     private long endTime;
 
     /**
-     * 父 Span
+     * 是否异常
      */
-    private transient Span parent;
+    private boolean error;
 
     /**
-     * 子 Span
+     * 异常信息
      */
-    private final List<Span> children = new CopyOnWriteArrayList<>();
-
-    // 属于哪个请求
-    private String traceId;
-
-    // 当前 span 唯一ID
-    private String spanId;
-
-    private boolean error;
     private String errorMsg;
-    private String parentSpanId;
-    private volatile boolean finished = false;
-    private final Map<String, String> tags = new HashMap<>();
 
-    public Span(String className, String methodName) {
-        this.className = className;
-        this.methodName = methodName;
+    /**
+     * 扩展标签（业务 / SQL / HTTP / 自定义）
+     */
+    private Map<String, String> tags = new HashMap<>();
 
-        /**
-         * 创建 Span 时记录开始时间
-         */
-        this.startTime = System.currentTimeMillis();
+    // -----------------------------
+    // 构造
+    // -----------------------------
+
+    public Span() {
+        this.startTime = System.nanoTime();
     }
 
-//    public Span() {
-//        this.startTime = System.currentTimeMillis();
-//    }
+    public Span(String method) {
+        this.method = method;
+        this.startTime = System.nanoTime();
+    }
 
-    /**
-     * 计算耗时
-     */
+    // -----------------------------
+    // 业务方法（轻量）
+    // -----------------------------
+
+    public void addTag(String key, String value) {
+        tags.put(key, value);
+    }
+
     public long getCost() {
         return endTime - startTime;
     }
 
-    public void addChild(Span child) {
-
-        if (child == null) {
-            return;
-        }
-
-        child.setParent(this);
-
-        child.setParentSpanId(this.spanId);
-
-        children.add(child);
-    }
-
-    public List<Span> getChildren() {
-        return children;
-    }
-
-    public void setParent(Span parent) {
-        this.parent = parent;
-    }
-
-    public Span getParent() {
-        return parent;
-    }
-
-
-    @Override
-    public String toString() {
-        return "[traceId=" + traceId + "] " + className
-                + "." + methodName + " cost=" + getCost() + "ms";
-    }
-
-    public String getClassName() {
-        return className;
-    }
-
-    public void setClassName(String className) {
-        this.className = className;
-    }
-
-    public String getMethodName() {
-        return methodName;
-    }
-
-    public void setMethodName(String methodName) {
-        this.methodName = methodName;
-    }
-
-    public long getStartTime() {
-        return startTime;
-    }
-
-    public long getEndTime() {
-        return endTime;
-    }
+    // -----------------------------
+    // getter / setter
+    // -----------------------------
 
     public String getTraceId() {
         return traceId;
@@ -155,6 +102,34 @@ public class Span {
 
     public void setSpanId(String spanId) {
         this.spanId = spanId;
+    }
+
+    public String getParentSpanId() {
+        return parentSpanId;
+    }
+
+    public void setParentSpanId(String parentSpanId) {
+        this.parentSpanId = parentSpanId;
+    }
+
+    public String getMethod() {
+        return method;
+    }
+
+    public void setMethod(String method) {
+        this.method = method;
+    }
+
+    public long getStartTime() {
+        return startTime;
+    }
+
+    public long getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(long endTime) {
+        this.endTime = endTime;
     }
 
     public boolean isError() {
@@ -173,25 +148,23 @@ public class Span {
         this.errorMsg = errorMsg;
     }
 
-    public String getParentSpanId() {
-        return parentSpanId;
-    }
-
-    public void setParentSpanId(String parentSpanId) {
-        this.parentSpanId = parentSpanId;
-    }
-
-    public synchronized void finish() {
-        if (finished) return;
-        finished = true;
-        this.endTime = System.currentTimeMillis();
-    }
-
-    public void addTag(String key, String value) {
-        tags.put(key, value);
-    }
-
     public Map<String, String> getTags() {
         return tags;
+    }
+
+    public void setTags(Map<String, String> tags) {
+        this.tags = tags;
+    }
+
+    @Override
+    public String toString() {
+        return "Span{" +
+                "traceId='" + traceId + '\'' +
+                ", spanId='" + spanId + '\'' +
+                ", parentSpanId='" + parentSpanId + '\'' +
+                ", method='" + method + '\'' +
+                ", cost=" + getCost() +
+                ", error=" + error +
+                '}';
     }
 }

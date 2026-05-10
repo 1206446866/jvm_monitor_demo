@@ -1,9 +1,11 @@
 package com.demo.agent.trace.manager;
 
+import com.demo.agent.trace.context.TraceContext;
 import com.demo.agent.trace.model.Span;
-import com.demo.agent.trace.exporter.TraceExporter;
-import com.demo.agent.trace.util.TraceUtil;
+import com.demo.agent.trace.queue.AsyncMetricQueue;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.UUID;
 
 
@@ -12,85 +14,60 @@ public class TraceManager {
     /**
      * 当前线程 Span 上下文
      */
-    private static final ThreadLocal<Span> CURRENT_SPAN = new ThreadLocal<>();
-
+    private static final ThreadLocal<Deque<Span>> STACK = ThreadLocal.withInitial(ArrayDeque::new);
     /**
      * 当前 traceId（可选，但推荐保留）
      */
     private static final ThreadLocal<String> CURRENT_TRACE_ID = new ThreadLocal<>();
 
-    /**
-     * 创建 Trace（入口 Span）
-     */
-    public static Span startTrace(String className, String methodName) {
+    private static final ThreadLocal<Boolean> IN_TRACE = new ThreadLocal<>();
 
-        String traceId = UUID.randomUUID().toString();
+    public static Span startSpan(String method) {
 
-        Span root = new Span(className, methodName);
-        root.setTraceId(traceId);
-        root.setSpanId(generateSpanId());
-        root.setParentSpanId(null);
+        Span parent = TraceContext.current();
 
-        CURRENT_TRACE_ID.set(traceId);
-        CURRENT_SPAN.set(root);
+        Span span = new Span(method);
 
-        return root;
-    }
+        span.setSpanId(generateSpanId());
 
-    /**
-     * 创建子 Span（自动挂父子关系）
-     */
-    public static Span startSpan(String className, String methodName) {
-
-        Span parent = CURRENT_SPAN.get();
         if (parent == null) {
-            // 没有 trace，就自动创建
-            return startTrace(className, methodName);
+            span.setTraceId(UUID.randomUUID().toString());
+        } else {
+            span.setTraceId(parent.getTraceId());
+            span.setParentSpanId(parent.getSpanId());
         }
 
-        Span child = new Span(className, methodName);
+        TraceContext.push(span);
 
-        child.setTraceId(parent.getTraceId());
-        child.setSpanId(generateSpanId());
-        child.setParentSpanId(parent.getSpanId());
-
-        parent.addChild(child);
-
-        CURRENT_SPAN.set(child);
-
-        return child;
+        return span;
     }
 
     /**
      * 结束当前 Span
      */
-    public static void finishSpan() {
+    public static void finishSpan(Throwable error) {
 
-        Span span = CURRENT_SPAN.get();
+        Span span = TraceContext.pop();
+
         if (span == null) return;
 
-        span.finish();
+        span.setEndTime(System.nanoTime());
 
-        Span parent = span.getParent();
+        if (error != null) {
+            span.setError(true);
+            span.setErrorMsg(error.getMessage());
+        }
 
-        if (parent != null) {
-            CURRENT_SPAN.set(parent);
-        } else {
-            // root span finished → trace结束
-            CURRENT_SPAN.remove();
-            CURRENT_TRACE_ID.remove();
-
-            // 👉 自动导出（关键点）
-            System.out.println(TraceExporter.exportToJson(span));;
+        /**
+         * ⭐关键点：
+         * 只有 root span 才进入 queue
+         */
+        if (TraceContext.isRootFinished()) {
+            AsyncMetricQueue.offer(span);
+            TraceContext.clear();
         }
     }
 
-    /**
-     * 获取当前 Span
-     */
-    public static Span currentSpan() {
-        return CURRENT_SPAN.get();
-    }
 
     /**
      * 获取当前 TraceId
@@ -106,27 +83,18 @@ public class TraceManager {
         return UUID.randomUUID().toString().replace("-", "");
     }
 
-    /**
-     * 手动埋点：添加 tag
-     */
-    public static void addTag(String key, String value) {
-        Span span = CURRENT_SPAN.get();
-        if (span != null) {
-            span.addTag(key, value);
-        }
+
+    public static void push(Span span) {
+        STACK.get().push(span);
     }
 
-    /**
-     * 手动标记 error
-     */
-    public static void error(Throwable e) {
-        Span span = CURRENT_SPAN.get();
-        if (span != null) {
-            span.setError(true);
-            span.setErrorMsg(e.getMessage());
-            span.addTag("exception", e.getClass().getName());
-            span.addTag("stack", TraceUtil.getStackTrace(e));
-        }
+    public static Span pop() {
+        return STACK.get().pop();
     }
+
+    public static Span current() {
+        return STACK.get().peek();
+    }
+
 
 }

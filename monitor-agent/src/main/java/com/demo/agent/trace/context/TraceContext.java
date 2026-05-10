@@ -2,68 +2,46 @@ package com.demo.agent.trace.context;
 
 import com.demo.agent.trace.model.Span;
 
-import java.util.Stack;
-import java.util.UUID;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 public class TraceContext {
 
+    private static final ThreadLocal<Deque<Span>> STACK =
+            ThreadLocal.withInitial(ArrayDeque::new);
+
     /**
-     * ThreadLocal:
-     * 每个线程独立保存自己的 traceId
-     * <p>
-     * 一次请求通常对应一个线程，
-     * 所以可以实现“调用链上下文共享”
+     * 入栈
      */
-    private static final ThreadLocal<String> TRACE_ID = new ThreadLocal<>();
-
-    private static final ThreadLocal<Stack<Span>> SPAN_STACK = ThreadLocal.withInitial(Stack::new);
+    public static void push(Span span) {
+        STACK.get().push(span);
+    }
 
     /**
-     * 获取当前线程 traceId
-     * <p>
-     * 如果不存在：
-     * 1. 生成新的 UUID
-     * 2. 放入 ThreadLocal
-     * 3. 后续同线程调用都会复用
+     * 出栈
      */
-    public static String getTraceId() {
-
-        String traceId = TRACE_ID.get();
-
-        if (traceId == null) {
-            traceId = UUID.randomUUID().toString();
-            TRACE_ID.set(traceId);
-        }
-
-        return traceId;
-    }
-
-    public static void pushSpan(Span span) {
-        SPAN_STACK.get().push(span);
-    }
-
-    public static Span popSpan() {
-        return SPAN_STACK.get().isEmpty() ? null : SPAN_STACK.get().pop();
-    }
-
-    public static Span currentSpan() {
-        return SPAN_STACK.get().isEmpty() ? null : SPAN_STACK.get().peek();
-    }
-
-    public static boolean hasActiveSpan() {
-        return !SPAN_STACK.get().isEmpty();
+    public static Span pop() {
+        return STACK.get().pop();
     }
 
     /**
-     * 请求结束后清理 ThreadLocal
-     * <p>
-     * 非常重要：
-     * 避免线程池导致 ThreadLocal 泄漏
+     * 当前 span
+     */
+    public static Span current() {
+        return STACK.get().peek();
+    }
+
+    /**
+     * 清理（非常重要！线程池场景必须）
      */
     public static void clear() {
-        TRACE_ID.remove();
-        SPAN_STACK.remove();
+        STACK.remove();
     }
 
-
+    /**
+     * 是否 trace 结束
+     */
+    public static boolean isRootFinished() {
+        return STACK.get().isEmpty();
+    }
 }

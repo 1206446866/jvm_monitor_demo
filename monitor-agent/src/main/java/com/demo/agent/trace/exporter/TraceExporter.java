@@ -1,39 +1,26 @@
 package com.demo.agent.trace.exporter;
 
 import com.demo.agent.trace.model.Span;
+import com.demo.agent.trace.model.SpanBuffer;
+import com.demo.agent.trace.util.JsonUtil;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class TraceExporter {
 
     /**
      * 对外入口：导出 trace
      */
-    public static String exportToJson(Span rootSpan) {
+    public static String exportToJson(String traceId) {
 
-        List<Span> allSpans = new ArrayList<>();
-        collect(rootSpan, allSpans);
+        List<Span> allSpans = SpanBuffer.getByTraceId(traceId);
 
         Map<String, Object> trace = new HashMap<>();
-        trace.put("traceId", rootSpan.getTraceId());
+        trace.put("traceId", traceId);
         trace.put("spans", convert(allSpans));
 
         return JsonUtil.toJson(trace);
-    }
-
-    /**
-     * 递归收集 Span
-     */
-    private static void collect(Span span, List<Span> list) {
-        if (span == null) return;
-
-        list.add(span);
-
-        if (span.getChildren() != null) {
-            for (Span child : span.getChildren()) {
-                collect(child, list);
-            }
-        }
     }
 
     /**
@@ -48,8 +35,7 @@ public class TraceExporter {
 
             map.put("spanId", span.getSpanId());
             map.put("parentSpanId", span.getParentSpanId());
-            map.put("className", span.getClassName());
-            map.put("methodName", span.getMethodName());
+            map.put("method", span.getMethod());
             map.put("startTime", span.getStartTime());
             map.put("endTime", span.getEndTime());
             map.put("cost", span.getCost());
