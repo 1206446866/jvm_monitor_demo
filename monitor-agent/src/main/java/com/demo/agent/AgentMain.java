@@ -18,19 +18,19 @@ public class AgentMain {
 
         ExecutorService exporter = Executors.newSingleThreadExecutor();
 
-        exporter.submit(() -> {
-
-            while (true) {
-                try {
-                    Span span = AsyncMetricQueue.take();
-
-                    TraceExporter.exportToJson(span.getTraceId());
-
-                } catch (InterruptedException e) {
-                    break;
-                }
-            }
-        });
+//        exporter.submit(() -> {
+//
+//            while (true) {
+//                try {
+//                    Span span = AsyncMetricQueue.take();
+//
+//                    TraceExporter.exportToJson(span.getTraceId());
+//
+//                } catch (InterruptedException e) {
+//                    break;
+//                }
+//            }
+//        });
     }
 
 }

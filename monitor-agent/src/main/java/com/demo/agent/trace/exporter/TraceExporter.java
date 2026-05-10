@@ -1,11 +1,12 @@
 package com.demo.agent.trace.exporter;
 
+import com.demo.agent.trace.builder.TraceTreeBuilder;
 import com.demo.agent.trace.model.Span;
 import com.demo.agent.trace.model.SpanBuffer;
+import com.demo.agent.trace.model.SpanNode;
 import com.demo.agent.trace.util.JsonUtil;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class TraceExporter {
 
@@ -21,6 +22,19 @@ public class TraceExporter {
         trace.put("spans", convert(allSpans));
 
         return JsonUtil.toJson(trace);
+    }
+
+    public static String exportTree(String traceId) {
+
+        List<Span> spans = SpanBuffer.getByTraceId(traceId);
+
+        SpanNode root = TraceTreeBuilder.build(spans);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("traceId", traceId);
+        result.put("root", toMap(root));
+
+        return JsonUtil.toJson(result);
     }
 
     /**
@@ -49,4 +63,22 @@ public class TraceExporter {
         return result;
     }
 
+    private static Map<String, Object> toMap(SpanNode node) {
+
+        Map<String, Object> map = new HashMap<>();
+
+        map.put("spanId", node.getSpanId());
+        map.put("method", node.getMethod());
+        map.put("cost", node.getCost());
+
+        List<Map<String, Object>> children = new ArrayList<>();
+
+        for (SpanNode child : node.children) {
+            children.add(toMap(child));
+        }
+
+        map.put("children", children);
+
+        return map;
+    }
 }

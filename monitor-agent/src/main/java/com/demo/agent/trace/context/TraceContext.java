@@ -44,4 +44,12 @@ public class TraceContext {
     public static boolean isRootFinished() {
         return STACK.get().isEmpty();
     }
+
+    public static Deque<Span> snapshot() {
+        return new ArrayDeque<>(STACK.get());
+    }
+
+    public static void restore(Deque<Span> snapshot) {
+        STACK.set(new ArrayDeque<>(snapshot));
+    }
 }

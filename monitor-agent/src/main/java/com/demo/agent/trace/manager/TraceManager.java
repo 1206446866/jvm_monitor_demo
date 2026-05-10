@@ -1,7 +1,9 @@
 package com.demo.agent.trace.manager;
 
 import com.demo.agent.trace.context.TraceContext;
+import com.demo.agent.trace.exporter.TraceExporter;
 import com.demo.agent.trace.model.Span;
+import com.demo.agent.trace.model.SpanBuffer;
 import com.demo.agent.trace.queue.AsyncMetricQueue;
 
 import java.util.ArrayDeque;
@@ -58,12 +60,20 @@ public class TraceManager {
             span.setErrorMsg(error.getMessage());
         }
 
-        /**
-         * ⭐关键点：
-         * 只有 root span 才进入 queue
-         */
+        // ⭐只做收集
+        SpanBuffer.add(span);
+
+        // ⭐root span 才触发 export
         if (TraceContext.isRootFinished()) {
-            AsyncMetricQueue.offer(span);
+
+            String traceId = span.getTraceId();
+
+            String json = TraceExporter.exportTree(traceId);
+
+            System.out.println(json);
+
+            AsyncMetricQueue.offer(traceId); // 或 trigger event
+
             TraceContext.clear();
         }
     }

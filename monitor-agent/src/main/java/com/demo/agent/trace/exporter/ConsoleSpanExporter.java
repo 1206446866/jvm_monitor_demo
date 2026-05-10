@@ -18,31 +18,5 @@ public class ConsoleSpanExporter implements SpanExporter {
             int depth
     ) {
 
-        // ==========================================
-        // 根据调用深度生成缩进
-        // ==========================================
-
-        String indent = "  ".repeat(depth);
-
-        // ==========================================
-        // 打印当前 Span
-        // ==========================================
-
-        System.out.println(
-                indent
-                        + span.getMethodName()
-                        + " ["
-                        + span.getCost()
-                        + "ms]"
-        );
-
-        // ==========================================
-        // 递归打印 children
-        // ==========================================
-
-        for (Span child : span.getChildren()) {
-
-            printSpan(child, depth + 1);
-        }
     }
 }

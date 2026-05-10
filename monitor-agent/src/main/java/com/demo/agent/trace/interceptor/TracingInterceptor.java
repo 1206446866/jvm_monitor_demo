@@ -45,7 +45,7 @@ public class TracingInterceptor {
         // ==========================================
         // 方法进入
         // ==========================================
-        Span span = TraceManager.startSpan(method.getDeclaringClass().getName(), method.getName());
+        Span span = TraceManager.startSpan(method.getName());
         // 可以加 tag
         span.addTag("class", method.getDeclaringClass().getName());
         span.addTag("method", method.getName());
@@ -59,17 +59,11 @@ public class TracingInterceptor {
             // 记录异常链路
             // ======================================
 
-            TraceManager.error(e);
+//            TraceManager.error(e);
             // Agent 不改变业务行为
-            throw e;
+            TraceManager.finishSpan(e);
 
-        } finally {
-
-            // ======================================
-            // 方法退出
-            // ======================================
-
-            TraceManager.finishSpan();
         }
+        return null;
     }
 }

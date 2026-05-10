@@ -1,5 +1,6 @@
 package com.demo.test;
 
+import com.demo.agent.trace.manager.TraceManager;
 import com.demo.app.UserService;
 
 public class AppMain {
@@ -7,11 +8,18 @@ public class AppMain {
     public static void main(String[] args)
             throws Exception {
 
-        UserService service =
-                new UserService();
+//        UserService service =
+//                new UserService();
+//
+//        service.login();
+//
+//        service.queryUser();
 
-        service.login();
+        TraceManager.startSpan("Controller.login");
 
-        service.queryUser();
+        TraceManager.startSpan("Service.query");
+        TraceManager.finishSpan(null);
+
+        TraceManager.finishSpan(null);
     }
 }
