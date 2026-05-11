@@ -1,6 +1,6 @@
 package com.demo.app;
 
-import com.demo.agent.trace.Trace;
+import com.demo.monitor.core.trace.Trace;
 
 @Trace
 public class UserService {

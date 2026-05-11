@@ -1,7 +1,6 @@
 package com.demo.test;
 
-import com.demo.agent.trace.manager.TraceManager;
-import com.demo.app.UserService;
+import com.demo.monitor.core.trace.manager.TraceManager;
 
 public class AppMain {
 
