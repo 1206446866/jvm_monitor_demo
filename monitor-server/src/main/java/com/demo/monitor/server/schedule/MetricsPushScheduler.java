@@ -1,7 +1,5 @@
 package com.demo.monitor.server.schedule;
 
-import com.demo.monitor.server.aggregator.DashboardAggregator;
-import com.demo.monitor.server.dto.DashboardOverview;
 import com.demo.monitor.server.websocket.MetricsWebSocketHandler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,19 +26,17 @@ public class MetricsPushScheduler {
      */
     @Scheduled(fixedRate = 1000)
     public void push() {
+        double cpu = Math.random() * 100;
 
-        try {
+        String json = """
+            {
+              "cpu": %.2f
+            }
+            """.formatted(cpu);
 
-            DashboardOverview overview =
-                    DashboardAggregator.aggregate();
+        handler.broadcast(json);
 
-            String json =
-                    mapper.writeValueAsString(overview);
+        System.out.println(json);
 
-            handler.broadcast(json);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }

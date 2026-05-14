@@ -2,6 +2,8 @@ package com.demo.monitor.core.metrics;
 
 import com.demo.monitor.core.model.Span;
 
+import java.util.concurrent.atomic.LongAdder;
+
 public class MethodMetrics {
 
     /**
@@ -12,43 +14,59 @@ public class MethodMetrics {
     /**
      * 调用次数
      */
-    private long count;
+    private final LongAdder count =
+            new LongAdder();
 
     /**
      * 总耗时
      */
-    private long totalCost;
+    private final LongAdder totalCost =
+            new LongAdder();
 
     /**
      * 最大耗时
      */
-    private long maxCost;
+    private volatile long maxCost;
 
     /**
-     * 错误次数
+     * 记录 span
      */
-    private long errorCount;
+    public void record(Span span) {
 
-    public synchronized void record(Span span) {
+        long cost = span.getCost();
 
-        count++;
+        count.increment();
 
-        totalCost += span.getCost();
+        totalCost.add(cost);
 
-        maxCost = Math.max(maxCost, span.getCost());
-
-        if (span.isError()) {
-            errorCount++;
+        if (cost > maxCost) {
+            maxCost = cost;
         }
     }
 
+    /**
+     * 平均耗时
+     */
     public double avgCost() {
-        return count == 0 ? 0 : (double) totalCost / count;
+
+        long c = count.sum();
+
+        if (c == 0) {
+            return 0;
+        }
+
+        return totalCost.sum() * 1.0 / c;
     }
 
-    public double errorRate() {
-        return count == 0 ? 0 : (double) errorCount / count;
+    public long maxCost() {
+        return maxCost;
     }
+
+    public long count() {
+        return count.sum();
+    }
+
+    // getter setter
 
     public String getMethod() {
         return method;
@@ -58,35 +76,7 @@ public class MethodMetrics {
         this.method = method;
     }
 
-    public long getCount() {
-        return count;
-    }
-
-    public void setCount(long count) {
-        this.count = count;
-    }
-
-    public long getTotalCost() {
-        return totalCost;
-    }
-
-    public void setTotalCost(long totalCost) {
-        this.totalCost = totalCost;
-    }
-
-    public long getMaxCost() {
-        return maxCost;
-    }
-
-    public void setMaxCost(long maxCost) {
-        this.maxCost = maxCost;
-    }
-
-    public long getErrorCount() {
-        return errorCount;
-    }
-
-    public void setErrorCount(long errorCount) {
-        this.errorCount = errorCount;
+    public String method() {
+        return method;
     }
 }
