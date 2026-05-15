@@ -7,8 +7,8 @@ import java.util.List;
 
 //慢调用检测
 public class SlowSpanDetector {
-
-    private static final long SLOW_THRESHOLD_MS = 50;
+//TODO  50
+    private static final long SLOW_THRESHOLD_MS = 0;
 
     public static List<Span> detect(List<Span> spans) {
 

@@ -1,5 +1,5 @@
 package com.demo.monitor.core.trace.dashboard;
-@Deprecated
+
 public class MetricsSnapshot {
 
     private String method;

@@ -7,7 +7,6 @@ D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\met
 D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\metrics\GlobalSlidingWindow.java
 D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\trace\exporter\tree\TraceTreeBuilder.java
 D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\metrics\MethodMetrics.java
-D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\trace\dashboard\DashboardDebug.java
 D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\model\Span.java
 D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\trace\exporter\FlameGraphExporter.java
 D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\trace\exporter\TraceExporter.java
@@ -52,4 +51,3 @@ D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\tra
 D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\trace\dashboard\MetricsSnapshot.java
 D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\trace\exporter\SpanExporter.java
 D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\trace\context\TraceContext.java
-D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\trace\builder\WaterfallBuilder.java

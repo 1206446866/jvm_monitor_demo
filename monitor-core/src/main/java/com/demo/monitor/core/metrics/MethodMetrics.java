@@ -79,4 +79,16 @@ public class MethodMetrics {
     public String method() {
         return method;
     }
+
+    public long getCount() {
+        return count.sum();
+    }
+
+    public LongAdder getTotalCost() {
+        return totalCost;
+    }
+
+    public long getMaxCost() {
+        return maxCost;
+    }
 }

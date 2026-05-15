@@ -1,39 +1,39 @@
-package com.demo.monitor.core.metrics.service;
+    package com.demo.monitor.core.metrics.service;
 
-public class ServiceMetrics {
+    public class ServiceMetrics {
 
-    private long requestCount;
+        private long requestCount;
 
-    private long errorCount;
+        private long errorCount;
 
-    private long totalCost;
+        private long totalCost;
 
-    public synchronized void record(long cost, boolean error) {
+        public synchronized void record(long cost, boolean error) {
 
-        requestCount++;
+            requestCount++;
 
-        totalCost += cost;
+            totalCost += cost;
 
-        if (error) {
-            errorCount++;
+            if (error) {
+                errorCount++;
+            }
+        }
+
+        public long qps() {
+            return requestCount;
+        }
+
+        public double avgLatency() {
+
+            return requestCount == 0
+                    ? 0
+                    : (double) totalCost / requestCount;
+        }
+
+        public double errorRate() {
+
+            return requestCount == 0
+                    ? 0
+                    : (double) errorCount / requestCount;
         }
     }
-
-    public long qps() {
-        return requestCount;
-    }
-
-    public double avgLatency() {
-
-        return requestCount == 0
-                ? 0
-                : (double) totalCost / requestCount;
-    }
-
-    public double errorRate() {
-
-        return requestCount == 0
-                ? 0
-                : (double) errorCount / requestCount;
-    }
-}

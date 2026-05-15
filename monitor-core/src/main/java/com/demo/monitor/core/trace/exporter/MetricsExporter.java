@@ -18,9 +18,9 @@ public class MetricsExporter {
             MetricsSnapshot snapshot = new MetricsSnapshot();
 //TODO
             snapshot.setMethod(metrics.getMethod());
-//            snapshot.setCount(metrics.getCount());
+            snapshot.setCount(metrics.getCount());
             snapshot.setAvgCost(metrics.avgCost());
-//            snapshot.setMaxCost(metrics.getMaxCost());
+            snapshot.setMaxCost(metrics.getMaxCost());
 //            snapshot.setErrorRate(metrics.errorRate());
 
             result.add(snapshot);

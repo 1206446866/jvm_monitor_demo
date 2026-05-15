@@ -26,8 +26,7 @@ public class MetricStore {
     }
 
     public void storeJvmSnapshot(String methodName, long timestamp, MemoryUsage heap, MemoryUsage nonHeap, ThreadInfo[] threads) {
-        methodJvmSnapshots.computeIfAbsent(methodName, k -> new CopyOnWriteArrayList<>())
-                .add(new JvmSnapshot(timestamp, heap, nonHeap, threads));
+        methodJvmSnapshots.computeIfAbsent(methodName, k -> new CopyOnWriteArrayList<>()).add(new JvmSnapshot(timestamp, heap, nonHeap, threads));
     }
 
     public Map<String, Long> getMethodStartTimes() {
@@ -43,17 +42,6 @@ public class MetricStore {
     }
 
     // JVM 快照对象
-    public static class JvmSnapshot {
-        public final long timestamp;
-        public final MemoryUsage heap;
-        public final MemoryUsage nonHeap;
-        public final ThreadInfo[] threads;
-
-        public JvmSnapshot(long timestamp, MemoryUsage heap, MemoryUsage nonHeap, ThreadInfo[] threads) {
-            this.timestamp = timestamp;
-            this.heap = heap;
-            this.nonHeap = nonHeap;
-            this.threads = threads;
-        }
+    public record JvmSnapshot(long timestamp, MemoryUsage heap, MemoryUsage nonHeap, ThreadInfo[] threads) {
     }
 }

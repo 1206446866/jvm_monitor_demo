@@ -11,8 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class SlowTraceRegistry {
 
-    private static final ConcurrentHashMap<String, List<Span>> SLOW_MAP =
-            new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, List<Span>> SLOW_MAP = new ConcurrentHashMap<>();
 
     /**
      * 记录慢 span
@@ -21,10 +20,7 @@ public class SlowTraceRegistry {
 
         // ⚠️ 这里用 P95 / P99 阈值判断（先简单写死）
         if (span.getCost() > 100_000_000L) { // 100ms
-
-            SLOW_MAP
-                    .computeIfAbsent(span.getMethodName(), k -> new ArrayList<>())
-                    .add(span);
+            SLOW_MAP.computeIfAbsent(span.getMethodName(), k -> new ArrayList<>()).add(span);
         }
     }
 
