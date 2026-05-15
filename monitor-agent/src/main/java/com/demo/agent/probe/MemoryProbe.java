@@ -19,9 +19,9 @@ public class MemoryProbe {
         MemoryUsage heap = memoryMXBean.getHeapMemoryUsage();
         MemoryUsage nonHeap = memoryMXBean.getNonHeapMemoryUsage();
 
-        metricStore.setHeapUsed(heap.getUsed());
-        metricStore.setHeapMax(heap.getMax());
-        metricStore.setNonHeapUsed(nonHeap.getUsed());
-        metricStore.setNonHeapMax(nonHeap.getMax());
+//        metricStore.setHeapUsed(heap.getUsed());
+//        metricStore.setHeapMax(heap.getMax());
+//        metricStore.setNonHeapUsed(nonHeap.getUsed());
+//        metricStore.setNonHeapMax(nonHeap.getMax());
     }
 }

@@ -8,6 +8,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class MetricStore {
 
+    public static final MetricStore INSTANCE = new MetricStore();
     private final Map<String, Long> methodStartTimes = new ConcurrentHashMap<>();
     private final Map<String, CopyOnWriteArrayList<Long>> methodDurations = new ConcurrentHashMap<>();
     private final Map<String, CopyOnWriteArrayList<JvmSnapshot>> methodJvmSnapshots = new ConcurrentHashMap<>();
@@ -27,6 +28,18 @@ public class MetricStore {
     public void storeJvmSnapshot(String methodName, long timestamp, MemoryUsage heap, MemoryUsage nonHeap, ThreadInfo[] threads) {
         methodJvmSnapshots.computeIfAbsent(methodName, k -> new CopyOnWriteArrayList<>())
                 .add(new JvmSnapshot(timestamp, heap, nonHeap, threads));
+    }
+
+    public Map<String, Long> getMethodStartTimes() {
+        return methodStartTimes;
+    }
+
+    public Map<String, CopyOnWriteArrayList<Long>> getMethodDurations() {
+        return methodDurations;
+    }
+
+    public Map<String, CopyOnWriteArrayList<JvmSnapshot>> getMethodJvmSnapshots() {
+        return methodJvmSnapshots;
     }
 
     // JVM 快照对象

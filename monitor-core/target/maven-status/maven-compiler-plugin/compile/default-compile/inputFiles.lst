@@ -34,7 +34,6 @@ D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\met
 D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\metrics\service\ServiceMetricsRegistry.java
 D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\analysis\link\MetricTraceLink.java
 D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\analysis\TopNMetricsAnalyzer.java
-D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\metrics\method\MethodMetrics.java
 D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\metrics\histogram\HistogramCalculator.java
 D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\metrics\bridge\ObservabilityBridge.java
 D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\analysis\HotspotAnalyzer.java
@@ -42,7 +41,9 @@ D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\tra
 D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\trace\propagation\TraceRunnable.java
 D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\trace\manager\TraceLifecycleManager.java
 D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\model\WaterfallNode.java
+D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\trace\dashboard\MethodMetricsAggregator.java
 D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\trace\util\TraceUtil.java
+D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\test\SpanMock.java
 D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\trace\exporter\ConsoleSpanExporter.java
 D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\trace\exporter\summary\TraceSummary.java
 D:\IDEA_project\jvm_monitor\monitor-core\src\main\java\com\demo\monitor\core\metrics\histogram\HistogramWindow.java

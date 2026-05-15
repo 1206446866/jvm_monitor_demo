@@ -1,7 +1,5 @@
 package com.demo.agent.probe;
 
-import com.demo.agent.storage.MetricStore;
-
 
 public class MethodTimer {
 
@@ -18,6 +16,6 @@ public class MethodTimer {
         long cost = System.nanoTime() - start;
         START.remove();
 
-        MetricStore.record(method, cost);
+//        MetricStore.record(method, cost);
     }
 }

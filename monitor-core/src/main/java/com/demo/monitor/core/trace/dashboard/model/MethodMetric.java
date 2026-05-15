@@ -13,10 +13,7 @@ public class MethodMetric {
     private List<String> slowTraceIds;
     private List<String> traceIds;
 
-    public MethodMetric(String method,
-                        double avgLatency,
-                        double errorRate,
-                        long qps) {
+    public MethodMetric(String method, double avgLatency, double errorRate, long qps) {
         this.method = method;
         this.avgLatency = avgLatency;
         this.errorRate = errorRate;

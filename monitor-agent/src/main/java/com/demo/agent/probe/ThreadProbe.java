@@ -18,7 +18,7 @@ public class ThreadProbe {
     public void sample() {
         long[] threadIds = threadMXBean.getAllThreadIds();
         ThreadInfo[] infos = threadMXBean.getThreadInfo(threadIds, 5); // 栈顶 5 层
-
-        metricStore.setThreadInfos(infos);
+//TODO
+//        metricStore.setThreadInfos(infos);
     }
 }

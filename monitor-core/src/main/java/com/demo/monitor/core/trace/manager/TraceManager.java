@@ -1,15 +1,14 @@
 package com.demo.monitor.core.trace.manager;
 
-import com.demo.monitor.core.trace.context.TraceContext;
-import com.demo.monitor.core.model.Span;
 import com.demo.monitor.core.analysis.TraceSpanStorage;
+import com.demo.monitor.core.model.Span;
+import com.demo.monitor.core.trace.context.TraceContext;
 import com.demo.monitor.core.trace.queue.AsyncMetricQueue;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.UUID;
 
-@Deprecated
 public class TraceManager {
 
     /**
