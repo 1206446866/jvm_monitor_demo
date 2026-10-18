@@ -67,4 +67,11 @@ public class MethodMetric {
     public void setP99(long p99) {
         this.p99 = p99;
     }
+
+    public String getTimeUnit() { return "ns"; }
+    public int getWindowSeconds() { return 60; }
+    public List<String> getTraceIds() { return traceIds; }
+    public void setTraceIds(List<String> traceIds) { this.traceIds = traceIds; }
+    public List<String> getSlowTraceIds() { return slowTraceIds; }
+    public void setSlowTraceIds(List<String> slowTraceIds) { this.slowTraceIds = slowTraceIds; }
 }

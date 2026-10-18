@@ -25,25 +25,7 @@ public class MetricsWebSocketHandler extends TextWebSocketHandler {
 
         System.out.println("WebSocket connected: " + session.getId());
 
-        // 🔥 延迟 200ms 再发（关键修复）
-        new Thread(() -> {
-            try {
-                Thread.sleep(200);
-
-                session.sendMessage(
-                        new TextMessage("""
-                    {
-                      "message": "hello websocket"
-                    }
-                    """)
-                );
-
-                System.out.println("message sent");
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }).start();
+        // 下次定时广播会发送完整的 JVM 和调用指标。
     }
 
     @Override
@@ -71,11 +53,10 @@ public class MetricsWebSocketHandler extends TextWebSocketHandler {
 
             try {
 
-                if (session.isOpen()) {
-
-                    session.sendMessage(
-                            new TextMessage(message)
-                    );
+                synchronized (session) {
+                    if (session.isOpen()) {
+                        session.sendMessage(new TextMessage(message));
+                    }
                 }
 
             } catch (Exception e) {

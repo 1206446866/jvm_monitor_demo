@@ -18,6 +18,6 @@ public class TestController {
         userService.login();
         userService.queryUser();
         userService.queryDb();
-        return "Agent 已收集数据";
+        return "测试调用已完成，请查看 /api/metrics/slow-methods 确认探针采集结果";
     }
 }

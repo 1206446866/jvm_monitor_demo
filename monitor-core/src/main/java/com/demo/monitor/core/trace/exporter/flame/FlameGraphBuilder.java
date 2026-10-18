@@ -33,14 +33,12 @@ public class FlameGraphBuilder {
             return;
         }
 
-        long currentBase = node.getStartTime();
-
         for (SpanNode child : node.getChildren()) {
 
             FlameNode childFlame = new FlameNode();
             flame.getChildren().add(childFlame);
 
-            convert(child, childFlame, depth + 1, currentBase);
+            convert(child, childFlame, depth + 1, baseTime);
         }
     }
 }

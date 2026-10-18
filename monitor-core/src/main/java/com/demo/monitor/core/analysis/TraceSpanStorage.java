@@ -17,7 +17,17 @@ public class TraceSpanStorage {
     }
 
     public static List<Span> getByTraceId(String traceId) {
-        return MAP.getOrDefault(traceId, Collections.emptyList());
+        List<Span> spans = MAP.get(traceId);
+        if (spans == null) return List.of();
+        synchronized (spans) { return List.copyOf(spans); }
+    }
+
+    public static List<List<Span>> recentTraces(int limit) {
+        return MAP.keySet().stream().map(TraceSpanStorage::getByTraceId)
+                .filter(spans -> spans.stream().anyMatch(s -> s.getParentSpanId() == null))
+                .sorted(java.util.Comparator.<List<Span>>comparingLong(spans ->
+                        spans.stream().mapToLong(Span::getStartTime).min().orElse(0)).reversed())
+                .limit(limit).toList();
     }
 
     public static void clear(String traceId) {

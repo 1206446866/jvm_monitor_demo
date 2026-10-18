@@ -9,6 +9,7 @@ public class DashboardAggregator {
     public static DashboardOverview aggregate() {
 
         DashboardOverview dto = new DashboardOverview();
+        dto.setTimestamp(System.currentTimeMillis());
 
         // QPS
         dto.setQps(GlobalSlidingWindow.qps());

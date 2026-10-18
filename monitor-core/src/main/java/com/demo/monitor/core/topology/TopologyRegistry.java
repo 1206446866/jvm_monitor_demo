@@ -1,6 +1,7 @@
 package com.demo.monitor.core.topology;
 
 import com.demo.monitor.core.model.Span;
+import com.demo.monitor.core.model.SpanNames;
 import com.demo.monitor.core.topology.model.ServiceRelation;
 
 import java.util.Collection;
@@ -23,8 +24,8 @@ public class TopologyRegistry {
             return;
         }
 
-        String from = extractService(parent);
-        String to = extractService(child);
+        String from = SpanNames.service(parent);
+        String to = SpanNames.service(child);
 
         // 自调用可忽略
         if (from.equals(to)) {
@@ -43,22 +44,9 @@ public class TopologyRegistry {
     }
 
     public static Collection<ServiceRelation> relations() {
-        return RELATIONS.values();
+        return RELATIONS.values().stream()
+                .sorted(java.util.Comparator.comparing(ServiceRelation::getFrom)
+                        .thenComparing(ServiceRelation::getTo)).toList();
     }
 
-    /**
-     * 提取服务名
-     */
-    private static String extractService(Span span) {
-
-        String method = span.getMethodName();
-
-        int idx = method.indexOf(".");
-
-        if (idx == -1) {
-            return "unknown";
-        }
-
-        return method.substring(0, idx);
-    }
 }

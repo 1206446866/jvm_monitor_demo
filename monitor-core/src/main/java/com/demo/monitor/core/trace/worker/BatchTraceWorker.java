@@ -1,8 +1,15 @@
 package com.demo.monitor.core.trace.worker;
 
+import com.demo.monitor.core.metrics.GlobalSlidingWindow;
+import com.demo.monitor.core.analysis.TraceSpanStorage;
 import com.demo.monitor.core.metrics.MetricsRegistry;
+import com.demo.monitor.core.metrics.bridge.ObservabilityBridge;
 import com.demo.monitor.core.model.Span;
+import com.demo.monitor.core.trace.context.TraceContext;
 import com.demo.monitor.core.trace.queue.AsyncMetricQueue;
+import com.demo.monitor.core.topology.TopologyRegistry;
+import java.util.HashMap;
+import java.util.Map;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,103 +17,47 @@ import java.util.concurrent.TimeUnit;
 
 import static com.demo.monitor.core.trace.exporter.TraceExporter.exportBatch;
 
-/**
- * Trace 异步批量消费线程
- *
- * <p>
- * 为什么需要 Batch？
- * <p>
- * tracing/export 属于慢操作：
- * <p>
- * 1. JSON 序列化
- * 2. 文件 IO
- * 3. HTTP 上报
- * 4. Kafka 发送
- * <p>
- * 如果每个 trace 都立即 export：
- * <p>
- * trace -> export -> IO
- * <p>
- * 会导致：
- * <p>
- * - IO 频繁
- * - flush 频繁
- * - CPU 上下文切换增加
- * - 吞吐量下降
- * <p>
- * 因此工业级 tracing 系统都会采用：
- * <p>
- * Batch Export（批量导出）
- * <p>
- * 即：
- * <p>
- * Queue -> Batch -> Export
- * <p>
- * OpenTelemetry / SkyWalking / Kafka Producer
- * 都是这种模式。
- */
+/** 消费所有已完成的 span，统一维护指标和调用链导出。 */
 public class BatchTraceWorker implements Runnable {
-
-    /**
-     * 单次最大批量大小
-     * <p>
-     * 例如：
-     * 一次最多处理100个 trace
-     */
     private static final int MAX_BATCH_SIZE = 100;
 
     @Override
     public void run() {
-
-        /**
-         * 为什么 while(true)？
-         *
-         * Worker 是后台常驻线程。
-         *
-         * 它不是执行一次任务后退出，
-         * 而是持续消费 Queue。
-         *
-         * 本质上这是：
-         *
-         * Consumer Event Loop
-         */
-        while (true) {
-
+        while (!Thread.currentThread().isInterrupted()) {
             try {
-
-                /**
-                 * 当前批次
-                 */
-                List<Span> batch = new ArrayList<>();
-
-                /**
-                 * take()：
-                 *
-                 * 阻塞等待至少一个 trace。
-                 *
-                 * Queue为空时：
-                 * worker线程休眠，不占CPU。
-                 */
                 Span first = AsyncMetricQueue.poll(500, TimeUnit.MILLISECONDS);
-                if (first != null) {
-                    batch.add(first);
-                    AsyncMetricQueue.drainTo(batch, MAX_BATCH_SIZE - 1);
+                if (first == null) {
+                    continue;
                 }
-
-                for (Span span : batch) {
-                    MetricsRegistry.record(span);
+                List<Span> batch = new ArrayList<>();
+                batch.add(first);
+                AsyncMetricQueue.drainTo(batch, MAX_BATCH_SIZE - 1);
+                List<Span> completed = new ArrayList<>();
+                for (Span root : batch) {
+                    List<Span> trace = TraceSpanStorage.getByTraceId(root.getTraceId());
+                    // 兼容显式入队而没有写 storage 的调用者。
+                    List<Span> spans = trace.isEmpty() ? List.of(root) : List.copyOf(trace);
+                    Map<String, Span> byId = new HashMap<>();
+                    for (Span span : spans) byId.put(span.getSpanId(), span);
+                    for (Span span : spans) {
+                        MetricsRegistry.record(span);
+                        ObservabilityBridge.record(span);
+                        if (span.getParentSpanId() != null) {
+                            TopologyRegistry.record(byId.get(span.getParentSpanId()), span);
+                        }
+                        if (TraceContext.isRoot(span)) {
+                            GlobalSlidingWindow.record(span);
+                        }
+                    }
+                    completed.addAll(spans);
                 }
-
-                /**
-                 * 批量 export
-                 */
-                String json = exportBatch(batch);
-                System.out.println(json);
+                System.out.println(exportBatch(completed));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             } catch (Exception e) {
+                System.err.println("Monitor trace aggregation failed");
                 e.printStackTrace();
             }
         }
     }
-
-
 }

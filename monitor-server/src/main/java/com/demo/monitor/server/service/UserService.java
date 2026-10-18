@@ -5,6 +5,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserService {
 
+    private final DatabaseService databaseService;
+
+    public UserService(DatabaseService databaseService) {
+        this.databaseService = databaseService;
+    }
+
     public void login() throws InterruptedException {
         Thread.sleep(100);
         System.out.println("login success");
@@ -16,6 +22,6 @@ public class UserService {
     }
 
     public void queryDb() throws InterruptedException {
-        Thread.sleep(50);
+        databaseService.query();
     }
 }

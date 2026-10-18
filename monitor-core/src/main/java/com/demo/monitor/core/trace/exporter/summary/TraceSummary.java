@@ -50,4 +50,6 @@ public class TraceSummary {
     public void setSlowestSpan(String slowestSpan) {
         this.slowestSpan = slowestSpan;
     }
+
+    public String getTimeUnit() { return "ns"; }
 }

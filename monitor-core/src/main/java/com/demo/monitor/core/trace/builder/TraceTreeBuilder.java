@@ -2,38 +2,11 @@ package com.demo.monitor.core.trace.builder;
 
 import com.demo.monitor.core.model.Span;
 import com.demo.monitor.core.model.SpanNode;
-
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+/** 兼容旧入口，统一使用可处理乱序和断链的实现。 */
 public class TraceTreeBuilder {
-
     public static SpanNode build(List<Span> spans) {
-
-        Map<String, SpanNode> map = new HashMap<>();
-        SpanNode root = null;
-
-        // 1. convert all spans → nodes
-        for (Span span : spans) {
-            map.put(span.getSpanId(), SpanNode.from(span));
-        }
-
-        // 2. build tree
-        for (Span span : spans) {
-
-            SpanNode node = map.get(span.getSpanId());
-
-            if (span.getParentSpanId() == null) {
-                root = node;
-            } else {
-                SpanNode parent = map.get(span.getParentSpanId());
-                if (parent != null) {
-                    parent.getChildren().add(node);
-                }
-            }
-        }
-
-        return root;
+        return com.demo.monitor.core.trace.exporter.tree.TraceTreeBuilder.build(spans);
     }
 }

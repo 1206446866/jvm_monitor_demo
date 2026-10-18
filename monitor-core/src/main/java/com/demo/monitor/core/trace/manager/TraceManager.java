@@ -63,9 +63,7 @@ public class TraceManager {
 
         // ⭐root span 才触发 export
         if (TraceContext.isRoot(span)) {
-
-            AsyncMetricQueue.offer(span); // 异步执行
-
+            AsyncMetricQueue.offer(span);
             TraceContext.clear();
         }
     }

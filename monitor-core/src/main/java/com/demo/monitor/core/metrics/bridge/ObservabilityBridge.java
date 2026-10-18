@@ -6,6 +6,7 @@ import com.demo.monitor.core.metrics.MethodSlidingWindowManager;
 import com.demo.monitor.core.metrics.histogram.HistogramRegistry;
 import com.demo.monitor.core.metrics.service.ServiceMetricsRegistry;
 import com.demo.monitor.core.model.Span;
+import com.demo.monitor.core.model.SpanNames;
 
 public class ObservabilityBridge {
 
@@ -14,7 +15,7 @@ public class ObservabilityBridge {
      */
     public static void record(Span span) {
 
-        String method = span.getMethodName();
+        String method = SpanNames.method(span);
 
         // ✔ 方法级统计
         MethodSlidingWindowManager.record(span);

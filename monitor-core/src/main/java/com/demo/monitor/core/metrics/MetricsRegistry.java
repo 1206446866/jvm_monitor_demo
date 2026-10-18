@@ -1,6 +1,7 @@
 package com.demo.monitor.core.metrics;
 
 import com.demo.monitor.core.model.Span;
+import com.demo.monitor.core.model.SpanNames;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -22,7 +23,7 @@ public class MetricsRegistry {
      */
     public static void record(Span span) {
 
-        String method = span.getClassName() + "." + span.getMethodName();
+        String method = SpanNames.method(span);
 
         METRICS.computeIfAbsent(method, k -> {
             MethodMetrics m = new MethodMetrics();

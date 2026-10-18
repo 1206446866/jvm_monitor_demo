@@ -1,30 +1,30 @@
 package com.demo.monitor.core.analysis.slow;
 
+import com.demo.monitor.core.analysis.SlowSpanDetector;
 import com.demo.monitor.core.model.Span;
-
-import java.util.ArrayList;
+import com.demo.monitor.core.model.SpanNames;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * 慢 Trace 索引器
- */
+/** 每个方法保留最近 1000 个慢调用，用于指标到 Trace 的下钻。 */
 public class SlowTraceRegistry {
+    private static final int MAX_PER_METHOD = 1000;
+    private static final ConcurrentHashMap<String, Deque<Span>> SLOW_MAP = new ConcurrentHashMap<>();
 
-    private static final ConcurrentHashMap<String, List<Span>> SLOW_MAP = new ConcurrentHashMap<>();
-
-    /**
-     * 记录慢 span
-     */
     public static void record(Span span) {
-
-        // ⚠️ 这里用 P95 / P99 阈值判断（先简单写死）
-        if (span.getCost() > 100_000_000L) { // 100ms
-            SLOW_MAP.computeIfAbsent(span.getMethodName(), k -> new ArrayList<>()).add(span);
+        if (!SlowSpanDetector.isSlow(span)) return;
+        Deque<Span> samples = SLOW_MAP.computeIfAbsent(SpanNames.method(span), k -> new ArrayDeque<>());
+        synchronized (samples) {
+            samples.addFirst(span);
+            while (samples.size() > MAX_PER_METHOD) samples.removeLast();
         }
     }
 
     public static List<Span> getSlowSpans(String method) {
-        return SLOW_MAP.getOrDefault(method, List.of());
+        Deque<Span> samples = SLOW_MAP.get(method);
+        if (samples == null) return List.of();
+        synchronized (samples) { return List.copyOf(samples); }
     }
 }

@@ -1,17 +1,14 @@
 package com.demo.monitor.server.schedule;
 
-import com.demo.monitor.core.metrics.window.SlidingWindow;
+import com.demo.monitor.core.metrics.GlobalSlidingWindow;
 import com.demo.monitor.server.export.MetricsExporter;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@Component
+/** 兼容手动导出；定时广播统一由 MetricsPushService 执行。 */
 public class MetricsPushJob {
 
-    private final SlidingWindow slidingWindow = new SlidingWindow();
     private final MetricsExporter exporter;
 
     public MetricsPushJob(
@@ -19,13 +16,12 @@ public class MetricsPushJob {
         this.exporter = exporter;
     }
 
-    @Scheduled(fixedRate = 1000)
     public void push() {
 
         Map<String, Object> data = new HashMap<>();
-        data.put("qps", slidingWindow.qps());
-        data.put("avgLatency", slidingWindow.avgLatency());
-        data.put("errorRate", slidingWindow.errorRate());
+        data.put("qps", GlobalSlidingWindow.qps());
+        data.put("avgLatency", GlobalSlidingWindow.avgLatency());
+        data.put("errorRate", GlobalSlidingWindow.errorRate());
 
         String json = toJson(data);
 

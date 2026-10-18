@@ -76,7 +76,7 @@ public class Span {
     public Span(String className, String methodName) {
         this.className = className;
         this.methodName = methodName;
-        this.startTime = System.currentTimeMillis();
+        this.startTime = System.nanoTime();
     }
 
     // -----------------------------

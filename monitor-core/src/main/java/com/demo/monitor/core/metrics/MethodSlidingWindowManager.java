@@ -3,6 +3,11 @@ package com.demo.monitor.core.metrics;
 import com.demo.monitor.core.metrics.window.SlidingWindow;
 import com.demo.monitor.core.model.Span;
 import com.demo.monitor.core.trace.dashboard.model.MethodMetric;
+import com.demo.monitor.core.metrics.histogram.HistogramRegistry;
+import com.demo.monitor.core.metrics.histogram.HistogramCalculator;
+import com.demo.monitor.core.analysis.link.MetricTraceLink;
+import com.demo.monitor.core.analysis.slow.SlowTraceRegistry;
+import com.demo.monitor.core.model.SpanNames;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,7 +18,7 @@ public class MethodSlidingWindowManager {
 
     public static void record(Span span) {
 
-        String method = span.getMethodName();
+        String method = SpanNames.method(span);
 
         SlidingWindow window = WINDOWS.computeIfAbsent(method, k -> new SlidingWindow());
 
@@ -43,6 +48,24 @@ public class MethodSlidingWindowManager {
 
     public static List<MethodMetric> topSlowMethods(int n) {
 
-        return WINDOWS.entrySet().stream().map(e -> new MethodMetric(e.getKey(), e.getValue().avgLatency(), e.getValue().errorRate(), e.getValue().totalRequests())).sorted((a, b) -> Double.compare(b.getAvgLatency(), a.getAvgLatency())).limit(n).toList();
+        return WINDOWS.entrySet().stream()
+                .filter(e -> e.getValue().totalRequests() > 0)
+                .sorted((a, b) -> Double.compare(b.getValue().avgLatency(), a.getValue().avgLatency()))
+                .limit(n).map(e -> snapshot(e.getKey())).toList();
+    }
+
+    public static MethodMetric snapshot(String method) {
+        SlidingWindow window = WINDOWS.get(method);
+        if (window == null) return null;
+        MethodMetric metric = new MethodMetric(method, window.avgLatency(),
+                window.errorRate(), window.totalRequests());
+        var histogram = HistogramRegistry.get(method);
+        List<Long> samples = histogram == null ? List.of() : histogram.snapshot();
+        metric.setP95(HistogramCalculator.p95(samples));
+        metric.setP99(HistogramCalculator.p99(samples));
+        metric.setTraceIds(MetricTraceLink.traceIds(method, 20));
+        metric.setSlowTraceIds(SlowTraceRegistry.getSlowSpans(method).stream()
+                .map(Span::getTraceId).distinct().limit(20).toList());
+        return metric;
     }
 }

@@ -1,6 +1,7 @@
 package com.demo.monitor.core.trace.queue;
 
 import com.demo.monitor.core.model.Span;
+import com.demo.monitor.core.trace.worker.BatchTraceWorker;
 
 import java.util.Collection;
 import java.util.concurrent.BlockingQueue;
@@ -42,10 +43,16 @@ public class AsyncMetricQueue {
      * <p>
      * Queue中的元素：
      * <p>
-     * root span（代表完整trace）
+     * root span（代表完整 trace，由消费者从 storage 取出所有子 span）
      */
     private static final BlockingQueue<Span> QUEUE =
             new LinkedBlockingQueue<>(10000);
+
+    static {
+        Thread worker = new Thread(new BatchTraceWorker(), "monitor-trace-worker");
+        worker.setDaemon(true);
+        worker.start();
+    }
 
     /**
      * 业务线程写入

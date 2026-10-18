@@ -30,7 +30,7 @@ public class ServiceRelation {
         return to;
     }
 
-    public long getCount() {
+    public synchronized long getCount() {
         return count;
     }
 }

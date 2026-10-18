@@ -1,6 +1,7 @@
 package com.demo.monitor.core.metrics.service;
 
 import com.demo.monitor.core.model.Span;
+import com.demo.monitor.core.model.SpanNames;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -14,7 +15,7 @@ public class ServiceMetricsRegistry {
 
     public static void record(Span span) {
 
-        String service = extractService(span);
+        String service = SpanNames.service(span);
 
         ServiceMetrics metrics =
                 MAP.computeIfAbsent(service, k -> new ServiceMetrics());
@@ -29,17 +30,5 @@ public class ServiceMetricsRegistry {
         return MAP.get(service);
     }
 
-    private static String extractService(Span span) {
-
-        String method = span.getMethodName();
-
-        int idx = method.indexOf(".");
-
-        if (idx == -1) {
-            return "unknown";
-        }
-
-        return method.substring(0, idx);
-    }
 
 }

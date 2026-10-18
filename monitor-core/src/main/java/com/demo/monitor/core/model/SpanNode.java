@@ -25,18 +25,32 @@ public class SpanNode {
     public SpanNode(Span span) {
         this.spanId = span.getSpanId();
         this.parentSpanId = span.getParentSpanId();
-        this.method = span.getMethodName();
+        this.method = SpanNames.method(span);
         this.startTime = span.getStartTime();
         this.cost = span.getCost();
     }
 
     public static SpanNode from(Span span) {
+        return new SpanNode(span);
+    }
+
+    public static SpanNode forest(List<SpanNode> roots) {
         SpanNode node = new SpanNode();
-        node.spanId = span.getSpanId();
-        node.parentSpanId = span.getParentSpanId();
-        node.method = span.getMethodName();
-        node.cost = span.getCost();
+        node.spanId = "virtual-root";
+        node.method = "[trace]";
+        node.startTime = roots.stream().mapToLong(SpanNode::getStartTime).min().orElse(0);
+        node.cost = roots.stream().mapToLong(r -> r.startTime + r.cost).max()
+                .orElse(node.startTime) - node.startTime;
+        node.children.addAll(roots);
         return node;
+    }
+
+    public long getSelfCost() {
+        List<long[]> intervals = new ArrayList<>();
+        for (SpanNode child : children) {
+            intervals.add(new long[]{child.startTime, child.startTime + child.cost});
+        }
+        return SpanTimings.selfCost(startTime, cost, intervals);
     }
 
     public String getSpanId() {

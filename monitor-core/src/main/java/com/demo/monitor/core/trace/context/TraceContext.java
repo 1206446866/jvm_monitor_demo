@@ -21,7 +21,7 @@ public class TraceContext {
      * 出栈
      */
     public static Span pop() {
-        return STACK.get().pop();
+        return STACK.get().poll();
     }
 
     /**

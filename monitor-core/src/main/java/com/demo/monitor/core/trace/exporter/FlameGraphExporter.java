@@ -1,6 +1,7 @@
 package com.demo.monitor.core.trace.exporter;
 
 import com.demo.monitor.core.trace.exporter.flame.FlameNode;
+import com.demo.monitor.core.model.SpanTimings;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,6 +14,7 @@ public class FlameGraphExporter {
         Map<String, Object> result = new HashMap<>();
 
         result.put("traceId", traceId);
+        result.put("timeUnit", "ns");
         result.put("totalCost", root.getCost());
 
         result.put("nodes", convert(root));
@@ -40,11 +42,11 @@ public class FlameGraphExporter {
         map.put("width", node.getCost());
 
         // self cost（关键）
-        long childCost = node.getChildren().stream()
-                .mapToLong(FlameNode::getCost)
-                .sum();
-
-        map.put("selfCost", node.getCost() - childCost);
+        List<long[]> intervals = new ArrayList<>();
+        for (FlameNode child : node.getChildren()) {
+            intervals.add(new long[]{child.getStartTime(), child.getStartTime() + child.getCost()});
+        }
+        map.put("selfCost", SpanTimings.selfCost(node.getStartTime(), node.getCost(), intervals));
 
         list.add(map);
 

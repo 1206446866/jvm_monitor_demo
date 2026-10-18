@@ -1,13 +1,12 @@
 package com.demo.monitor.server.schedule;
 
 import com.demo.monitor.server.websocket.MetricsWebSocketHandler;
+import com.demo.monitor.server.aggregator.DashboardAggregator;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
-@Component
+/** 兼容手动推送；定时广播统一由 MetricsPushService 执行。 */
 public class MetricsPushScheduler {
 
     private final MetricsWebSocketHandler handler;
@@ -24,19 +23,12 @@ public class MetricsPushScheduler {
     /**
      * 每秒推送 dashboard 数据
      */
-    @Scheduled(fixedRate = 1000)
     public void push() {
-        double cpu = Math.random() * 100;
-
-        String json = """
-            {
-              "cpu": %.2f
-            }
-            """.formatted(cpu);
-
-        handler.broadcast(json);
-
-        System.out.println(json);
+        try {
+            handler.broadcast(mapper.writeValueAsString(DashboardAggregator.aggregate()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 }
